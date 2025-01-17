@@ -37,6 +37,10 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_svg: ^2.0.17
   flutter_hooks: ^0.20.5
+  json_annotation: ^4.9.0
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  hooks_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
@@ -48,10 +52,18 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+  build_runner: ^2.4.11
+  flutter_gen_runner: ^5.8.0
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.4.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+flutter_gen:
+  output: lib/gen/
+  integrations:
+    flutter_svg: true
 # The following section is specific to Flutter packages.
 flutter:
 
