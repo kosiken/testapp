@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:testapp/gen/fonts.gen.dart';
 
 enum TypographyVatiant { body, header, small }
 
@@ -37,7 +38,7 @@ class AppTypography extends StatelessWidget {
       
         TextStyle( 
           fontStyle: this.italics? FontStyle.italic : FontStyle.normal,
-          fontSize: fontSize, fontFamily: 'ProximaNova', color: color, fontWeight: fontWeight, height: height, inherit: true));
+          fontSize: fontSize, fontFamily: FontFamily.proximaNova, color: color, fontWeight: fontWeight, height: height, inherit: true));
     if (textStyle != null) {
       style = style.merge(textStyle);
     }
