@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:testapp/gen/assets.gen.dart';
+import 'package:testapp/mock/data.dart';
+import 'package:testapp/models/option.dart';
+import 'package:testapp/models/user_question.dart';
 import 'package:testapp/widgets/icon_button.dart';
 import 'package:testapp/widgets/typography.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+
+final userQuestionProvider = NotifierProvider<UserOptions, UserQuestion>(UserOptions.new);
+
 
 class _DescriptiveIcon extends StatelessWidget {
   final String assetName;
@@ -37,15 +47,10 @@ class _DescriptiveIcon extends StatelessWidget {
   }
 }
 
-class _Option {
-  final String label;
-  final String text;
 
-  _Option({required this.label, required this.text});
-}
 
 class _OptionWidget extends StatelessWidget {
-  final _Option option;
+  final Option option;
   final bool selected;
   final VoidCallback onTap;
   const _OptionWidget(
@@ -106,18 +111,19 @@ class _OptionWidget extends StatelessWidget {
   }
 }
 
-List<_Option> options = [
-  _Option(label: 'A', text: 'The peace in the early mornings'),
-  _Option(label: 'B', text: 'The magical golden hours'),
-  _Option(label: 'C', text: 'Wind-down time after dinners'),
-  _Option(label: 'D', text: 'The serenity past midnight'),
+List<Option> options = [
+  Option(label: 'A', text: 'The peace in the early mornings'),
+  Option(label: 'B', text: 'The magical golden hours'),
+  Option(label: 'C', text: 'Wind-down time after dinners'),
+  Option(label: 'D', text: 'The serenity past midnight'),
 ];
 
-class Page1 extends HookWidget {
+class Page1 extends HookConsumerWidget {
   const Page1({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userQuestionRef = ref.watch(userQuestionProvider);
     var selectedOption = useState('D');
     Size size = MediaQuery.of(context).size;
     return Column(
@@ -125,8 +131,7 @@ class Page1 extends HookWidget {
         Expanded(
             child: Stack(
           children: [
-            Image.asset(
-              'assets/images/chalet-sunset.jpeg',
+            Assets.images.chaletSunset.image(
               height: size.height * 0.57,
               width: size.width,
               fit: BoxFit.cover,
@@ -187,176 +192,176 @@ class Page1 extends HookWidget {
               ),
             ),
             SafeArea(
-                bottom: false,
-                child:Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+              bottom: false,
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    children: [
+                      Expanded(
                           child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-            Expanded(child: Column(children: [                  
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const AppTypography("Stroll Bonfire",
-                                      variant: TypographyVatiant.header,
-                                      fontSize: 34,
-                                      color: Color(0xFFCCC8FF)),
-                                  const SizedBox(
-                                    width: 4,
-                                  ),
-                                  SvgPicture.asset(
-                                      'assets/icons/arrow-down.svg')
-                                ],
+                              const AppTypography("Stroll Bonfire",
+                                  variant: TypographyVatiant.header,
+                                  fontSize: 34,
+                                  color: Color(0xFFCCC8FF)),
+                              const SizedBox(
+                                width: 4,
                               ),
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _DescriptiveIcon(
-                                    assetName: 'assets/icons/stop-clock.svg',
-                                    title: '22h 00m',
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  _DescriptiveIcon(
-                                    assetName: 'assets/icons/person.svg',
-                                    title: '103',
-                                    color: Colors.white,
-                                  )
-                                ],
-                              ),
-                        ],)),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 15),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 25,
-                                      foregroundImage:
-                                          AssetImage('assets/images/joey.jpeg'),
-                                    ),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          AppTypography('Angelina, 28',
-                                              variant: TypographyVatiant.small,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFFF5F5F5)),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 10),
-                                            child: AppTypography(
-                                              'What is your favorite time of the day?',
-                                              color: Color(0xFFF5F5F5),
-                                              variant: TypographyVatiant.header,
-                                              height: 1,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
+                              Assets.icons.arrowDown.svg()
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _DescriptiveIcon(
+                                assetName: Assets.icons.stopClock.path,
+                                title: '22h 00m',
+                                color: Colors.white,
                               ),
                               const SizedBox(
-                                height: 10,
+                                width: 10,
                               ),
-                              const AppTypography(
-                                '“Mine is definitely the peace in the morning.”',
-                                italics: true,
-                                variant: TypographyVatiant.small,
-                                color: Color(0xB2CBC9FF),
-                              ),
-                              const SizedBox(
-                                height: 15,
-                              ),
-                              SizedBox(
-                                height: (60 * (options.length / 2)) + 20,
-                                child: GridView(
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 2,
-                                          mainAxisExtent: 58,
-                                          crossAxisSpacing: 5,
-                                          mainAxisSpacing: 15),
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  children: options
-                                      .map((option) => _OptionWidget(
-                                            option: option,
-                                            onTap: () {
-                                              selectedOption.value =
-                                                  option.label;
-                                            },
-                                            selected: option.label ==
-                                                selectedOption.value,
-                                          ))
-                                      .toList(),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 15,
-                              ),
-                              const Row(
-                                children: [
-                                  Expanded(
-                                    child: AppTypography(
-                                      "Pick your option.\nSee who has a similar mind.",
-                                      color: Color(0xFFE5E5E5),
-                                      variant: TypographyVatiant.small,
-                                    ),
-                                  ),
-                                  AppIconButton(
-                                    assetName: 'assets/icons/microphone.svg',
-                                    variant: AppIconButtonVariant.outline,
-                                    color: Color(0xFF8B88EF),
-                                  ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  AppIconButton(
-                                    icon: Icons.arrow_forward,
-                                    variant: AppIconButtonVariant.filled,
-                                    color: Color(0xFF8B88EF),
-                                  )
-                                ],
+                             _DescriptiveIcon(
+                                assetName: Assets.icons.person.path,
+                                title: '103',
+                                color: Colors.white,
                               )
                             ],
-                          )),
-                   ),
+                          ),
+                        ],
+                      )),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 25,
+                              foregroundImage:
+                                 Assets.images.joey.provider(),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                             Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const AppTypography('Angelina, 28',
+                                      variant: TypographyVatiant.small,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFF5F5F5)),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: AppTypography(
+                                      userQuestionRef.question,
+                                      color: const Color(0xFFF5F5F5),
+                                      variant: TypographyVatiant.header,
+                                      height: 1,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      AppTypography(
+                        '“${userQuestionRef.userHint}”',
+                        italics: true,
+                        variant: TypographyVatiant.small,
+                        color: const Color(0xB2CBC9FF),
+                      ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      SizedBox(
+                        height: (60 * (userQuestionRef.options.length / 2)) + 20,
+                        child: GridView(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisExtent: 58,
+                                  crossAxisSpacing: 5,
+                                  mainAxisSpacing: 15),
+                          physics: const NeverScrollableScrollPhysics(),
+                          children:  userQuestionRef.options
+                              .map((option) => _OptionWidget(
+                                    option: option,
+                                    onTap: () {
+                                      selectedOption.value = option.label;
+                                    },
+                                    selected:
+                                        option.label == selectedOption.value,
+                                  ))
+                              .toList(),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                       Row(
+                        children: [
+                          const Expanded(
+                            child: AppTypography(
+                              "Pick your option.\nSee who has a similar mind.",
+                              color: Color(0xFFE5E5E5),
+                              variant: TypographyVatiant.small,
+                            ),
+                          ),
+                          AppIconButton(
+                            assetName: Assets.icons.microphone.path,
+                            variant: AppIconButtonVariant.outline,
+                            color: const Color(0xFF8B88EF),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          const AppIconButton(
+                            icon: Icons.arrow_forward,
+                            variant: AppIconButtonVariant.filled,
+                            color: Color(0xFF8B88EF),
+                          )
+                        ],
+                      )
+                    ],
+                  )),
+            ),
           ],
         )),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           height: 100,
           color: const Color(0xFF0F1115),
-          child: const SafeArea(
+          child: SafeArea(
             top: false,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 AppIconButton(
-                  assetName: 'assets/icons/love-cards.svg',
+                  assetName: Assets.icons.loveCards.path,
                   variant: AppIconButtonVariant.iconOnly,
                   color: Colors.white,
                   size: 28,
                 ),
                 AppIconButton(
-                  assetName: 'assets/icons/flame.svg',
+                  assetName: Assets.icons.flame.path,
                   showBadge: true,
                   variant: AppIconButtonVariant.iconOnly,
                   color: Colors.white,
                   size: 28,
                 ),
                 AppIconButton(
-                  assetName: 'assets/icons/chat.svg',
+                  assetName: Assets.icons.chat.path,
                   showBadge: true,
                   badgeCount: 10,
                   variant: AppIconButtonVariant.iconOnly,
@@ -364,7 +369,7 @@ class Page1 extends HookWidget {
                   size: 28,
                 ),
                 AppIconButton(
-                  assetName: 'assets/icons/person.svg',
+                  assetName: Assets.icons.person.path,
                   variant: AppIconButtonVariant.iconOnly,
                   color: Colors.white,
                   size: 28,
@@ -377,27 +382,3 @@ class Page1 extends HookWidget {
     );
   }
 }
-
-// background: linear-gradient(180.06deg, rgba(15, 17, 21, 0) 43.97%, rgba(13, 14, 18, 0.28) 48.6%, rgba(11, 12, 15, 0.64) 52.52%, rgba(9, 11, 13, 0.8) 55.14%, #000000 56.94%),
-// radial-gradient(74.67% 34.48% at 50.13% 18.72%, rgba(0, 0, 0, 0.045) 0%, rgba(0, 0, 0, 0.107193) 63.28%, rgba(0, 0, 0, 0.135) 75.66%, rgba(0, 0, 0, 0.195) 88.28%, rgba(0, 0, 0, 0.24) 100%),
-// linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.123359) 14%, rgba(0, 0, 0, 0) 23.4%);
-
-/**
- *               Expanded(
-                child: GridView(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisExtent: 58,crossAxisSpacing: 5,
-                    mainAxisSpacing: 5
-                  ),
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: options
-                      .map((option) => _OptionWidget(
-                            option: option,
-                            onTap: () {},
-                            selected: option.label == 'D',
-                          ))
-                      .toList(),
-                ),
-              )
- */
