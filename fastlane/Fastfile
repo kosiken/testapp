@@ -1,0 +1,158 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+fastlane_require 'dotenv'
+
+
+default_platform(:ios)
+release_notes_command = "git log HEAD --pretty=format:\"%s\" -1"
+def bump_build_number()
+  latest_build_number = latest_testflight_build_number(initial_build_number: 44) + 1
+  return "#{latest_build_number}"
+end
+lane :set_build_numbers_to_current_timestamp do |options|
+  incremented_build_number = bump_build_number()
+  ENV['IOS_VERSION_BUILD_NUMBER'] = incremented_build_number
+  ENV['FLUTTER_ROOT'] = ".fvm/flutter_sdk"
+end
+
+
+platform :ios do
+  xcworkspace = "ios/Runner.xcworkspace"
+  xcodeproj = "ios/Runner.xcodeproj"
+
+
+  desc 'Fetch certificates and provisioning profiles'
+  private_lane :prepare do
+    if is_ci
+      setup_ci # creates MATCH_KEYCHAIN_NAME on CI
+
+      # Fixes random Fastlane failures by manually importing Apple certificates.
+      # See https://github.com/fastlane/fastlane/issues/20960#issuecomment-1621931850
+      import_certificate(
+        certificate_path: 'keys/Apple/AppleWWDRCAG2.cer',
+        keychain_name: ENV['MATCH_KEYCHAIN_NAME'],
+        keychain_password: ENV['MATCH_KEYCHAIN_PASSWORD']
+      )
+      import_certificate(
+        certificate_path: 'keys/Apple/AppleWWDRCAG3.cer',
+        keychain_name: ENV['MATCH_KEYCHAIN_NAME'],
+        keychain_password: ENV['MATCH_KEYCHAIN_PASSWORD']
+      )
+      import_certificate(
+        certificate_path: 'keys/Apple/AppleWWDRCAG4.cer',
+        keychain_name: ENV['MATCH_KEYCHAIN_NAME'],
+        keychain_password: ENV['MATCH_KEYCHAIN_PASSWORD']
+      )
+      import_certificate(
+        certificate_path: 'keys/Apple/AppleWWDRCAG5.cer',
+        keychain_name: ENV['MATCH_KEYCHAIN_NAME'],
+        keychain_password: ENV['MATCH_KEYCHAIN_PASSWORD']
+      )
+      import_certificate(
+        certificate_path: 'keys/Apple/AppleWWDRCAG6.cer',
+        keychain_name: ENV['MATCH_KEYCHAIN_NAME'],
+        keychain_password: ENV['MATCH_KEYCHAIN_PASSWORD']
+      )
+
+    end
+  end
+  lane :build_setup do |options|
+    plist_full_path = "Runner/Info.plist"
+    pbxproj_full_path="#{xcodeproj}/project.pbxproj"
+    set_build_numbers_to_current_timestamp
+    update_info_plist(
+      xcodeproj: xcodeproj,
+      plist_path: plist_full_path,
+      block: lambda { |plist|
+        plist['CFBundleVersion'] = ENV['IOS_VERSION_BUILD_NUMBER']
+      },
+    )
+  end
+
+
+
+
+
+  
+  desc "Push a new beta build to TestFlight"
+  lane :deploy_to_testflight do |options|
+    pilot(
+      username: ENV['APPLE_ID'],
+      app_identifier: ENV['APPLE_APP_ID'],
+      ipa: ENV['IOS_IPA_PATH'],
+      distribute_external: false,
+      skip_waiting_for_build_processing: true,
+      notify_external_testers: false,
+      beta_app_feedback_email: ENV['APPLE_FEEDBACK_EMAIL'],
+      beta_app_description: "Beta Build",
+      demo_account_required: false,
+    )
+    end
+
+  
+  lane :beta do
+    build_setup
+    prepare
+    sync_code_signing(
+      type: "appstore",
+      app_identifier: [ENV["APPLE_APP_ID"]],
+    )
+    build_number = bump_build_number()
+
+    sh("flutter", "build", "ipa", "--release", "--build-number=#{build_number}")
+    build_app(
+      workspace: "#{xcworkspace}", 
+      skip_build_archive: true,
+      archive_path: "./build/ios/archive/Runner.xcarchive",
+
+    )
+    deploy_to_testflight
+    # upload_to_testflight
+  end
+
+
+  lane :prod do
+    build_setup
+    prepare
+    sync_code_signing(
+      type: "appstore",
+      app_identifier: [ENV["APPLE_APP_ID"]],
+    )
+    build_app(
+      workspace: "#{xcworkspace}", 
+      scheme: "Runner",
+      clean: false,
+      configuration: "Release",
+      xcargs: "-verbose"
+
+    )
+    deploy_to_testflight
+  end
+
+
+  lane :generate_certificates do |options|
+    ["appstore"].each do |env|
+      match(
+        app_identifier: [ENV["APPLE_APP_ID"]],
+        type: env,
+        shallow_clone: true,
+        clone_branch_directly: true,
+        generate_apple_certs: true,
+        verbose: true
+      )
+    end
+  end
+
+end
